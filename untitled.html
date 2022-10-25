@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Project 1 - Aydan Koyles</title>
+	<script src="https://d3js.org/d3.v3.min.js"></script>
+</head>
+    <style>
+        
+        .line {
+        	fill: none;
+        	stroke:  black;
+        	stroke-width:  1.5px;
+        }
+
+        #age_tooltip {
+				position: absolute;
+				width: 150px;
+				height: auto;
+				padding: 10px;
+				background-color: white;
+				-webkit-border-radius: 10px;
+				-moz-border-radius: 10px;
+				border-radius: 10px;
+				-webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+				-moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+				box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+				pointer-events: none;
+			}
+			
+			#age_tooltip.hidden {
+				display: none;
+			}
+			
+			#age_tooltip p {
+				margin: 0;
+				font-family: serif;
+				font-size: 12px;
+				line-height: 16px;
+			}
+
+    </style>
+
+<body>
+
+	<div id = 'age_tooltip' class = 'hidden'>
+		<p><strong>Age at Death</strong></p>
+		<p><span id='value'>100</span>years</p>
+	</div>
+
+	<script>
+
+		//empty datasets
+		var streets;
+		var deaths;
+		var pumps;
+
+		//margin, pad, width and height variables
+		var margin = {t: 20, l: 20},
+			w = 650,
+			h = 750,
+			pad = 20;
+
+		//initialize mapSVG
+		var mapSVG = d3.select('body').append('svg')
+						.attr('width', w)
+						.attr('height', h)
+						.append('g')
+						.attr('transform', 'translate(' + margin.l + ',' + margin.t + ')');
+
+
+		//read in streets data and draw to mapSVG
+		d3.json('streets.json', function(data) {
+			//console.log(data);
+			streets = data;
+			//console.log(streets);
+			streets.forEach(function(d) {
+				d[0].x1 = +d[0].x*25;
+				d[1].x2 = +d[1].x*25;
+				d[0].y1 = +d[0].y*25;
+				d[1].y2 = +d[1].y*25;
+			});
+
+			//console.log(streets);
+
+			//draw lines
+			mapSVG.selectAll('line')
+				.data(streets)
+				.enter()
+				.append('line')
+				.attr('x1', function(d) {return d[0].x1;})
+				.attr('y1', function(d) {return h - 200 - d[0].y1;})
+				.attr('x2', function(d) {return d[1].x2;})
+				.attr('y2', function(d) {return h - 200 - d[1].y2;})
+				.attr('stroke', 'black')
+				.attr('stroke-width', 0.8);
+
+			//title
+			mapSVG.append('text')
+				.attr('x', w/2 - 30)
+				.attr('y', margin.t*3)
+				.attr('text-anchor', 'middle')
+				.style('font-size', '20px')
+				.style('font-family', 'serif')
+				.text('London Cholera Epidemic 1854');
+		});
+
+		d3.csv('pumps.csv', function(data) {
+			//console.log(data);
+			pumps = data;
+			console.log(pumps);
+
+			mapSVG.selectAll('circle')
+				.data(pumps)
+				.enter()
+				.append('circle')
+				.attr('cx', function(d) {return +d.x*25;})
+				.attr('cy', function(d) {return h - 200 - +d.y*25;})
+				.attr('r', 4)
+				.attr('fill', '#404049');
+
+		//read in deaths_age_sex file and use to plot deaths on map coded by gender and age
+		//also use to create bar charts for both variables using predefined functions
+		d3.csv('deaths_age_sex.csv', function(data) {
+			//console.log(data);
+			deaths = data;
+			//console.log(deaths);
+
+			//create scales
+			var ageScale = d3.scale.linear()
+								.domain([0, d3.max(deaths, function(d) {return +d.age})])
+								.range([1.5, 3]);
+
+			var ageOrdinal = d3.scale.ordinal()
+										.domain([0, 1, 2, 3, 4, 5])
+										.range([1.5, 1.8, 2.1, 2.4, 2.7, 3]);
+
+			var genderScale = d3.scale.ordinal()
+									.domain([0, 1])
+									.range(['#4585FD', '#FF6556']);
+
+			var legendText = d3.scale.ordinal()
+										.domain([0, 1, 2])
+										.range(['Male', 'Female', 'Pump']);
+
+			var legendLabel = d3.scale.ordinal()
+										.domain([0, 1, 2])
+										.range(['#4585FD', '#FF6556', '#404049']);
+
+			var ageBuckets = d3.scale.ordinal()
+										.domain([0, 1, 2, 3, 4, 5])
+										.range(['0-10', '11-20', '21-40', '41-60', '61-80', '>80']);
+
+			//create points for deaths on map
+			mapSVG.selectAll('circle')
+				.data(deaths)
+				.enter()
+				.append('circle')
+				.attr('cx', function(d) {return +d.x*25;})
+				.attr('cy', function(d) {return h - 200 - +d.y*25;})
+				.attr('r', function(d) {return ageScale(+d.age);})
+				.attr('fill', function(d) {return genderScale(+d.gender);})
+				.on('mouseover', function(d) {
+					d3.select(this)
+						.transition()
+						.duration(250)
+						.attr('r', 7);
+
+					var xPos = parseFloat(d3.select(this).attr('cx')) + 30;
+					var yPos = parseFloat(d3.select(this).attr('cy')) - 30;
+
+					d3.select("#age_tooltip")
+						.style("left", xPos + "px")
+						.style("top", yPos + "px")						
+						.select("#value")
+						.text('Age: ' + ageBuckets(d.age) + ' ');
+			   
+					d3.select("#age_tooltip").classed("hidden", false);
+				})
+				.on('mouseout', function(d) {
+					d3.select(this)
+						.transition()
+						.duration(250)
+						.attr('r', function(d) {return ageScale(+d.age);});
+					d3.select('#age_tooltip').classed('hidden', true);
+				});
+
+			//create legend for gender
+			var keys = ['0', '1', '2'];
+			mapSVG.selectAll('genderdots')
+				.data(keys)
+				.enter()
+				.append('circle')
+				.attr('cx', 100)
+				.attr('cy', function(d, i) {return 480 + i*15;})
+				.attr('r', 5)
+				.style('fill', function(d) {return legendLabel(d);});
+
+			mapSVG.selectAll('genderlabels')
+				.data(keys)
+				.enter()
+				.append('text')
+				.attr('x', 115)
+				.attr('y', function(d, i) {return 480 + i*15;})
+				.style('fill', function(d) {return legendLabel(d);})
+				.text(function(d) {return legendText(d);})
+				.style('font-family', 'serif')
+				.attr('text-anchor', 'left')
+				.style('alignment-baseline', 'middle');
+
+			//create legend for age (size of points)
+			var ageKeys = ['0', '1', '2', '3', '4', '5'];
+			mapSVG.selectAll('agedots')
+				.data(ageKeys)
+				.enter()
+				.append('circle')
+				.attr('cx', 200)
+				.attr('cy', function(d, i) {return 480 + i*15;})
+				.attr('r', function(d) {return ageOrdinal(d);})
+				.attr('fill', '#404049');
+
+			mapSVG.selectAll('agelabels')
+				.data(ageKeys)
+				.enter()
+				.append('text')
+				.attr('x', 215)
+				.attr('y', function(d, i) {return 480 + i*15;})
+				.style('fill', '#404049')
+				.text(function(d) {return ageBuckets(d) + ' years';})
+				.style('font-family', 'serif')
+				.attr('text-anchor', 'left')
+				.style('alignment-baseline', 'middle');
+		});
+
+	</script>
+
+</body>
+
+</html>

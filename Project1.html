@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Project 1 - Aydan Koyles</title>
+	<script src="https://d3js.org/d3.v3.min.js"></script>
+</head>
+    <style>
+
+    	body {
+    		font-family:  Serif;
+    		font-size:  20px;
+    	}
+        
+        .line {
+        	fill: none;
+        	stroke:  black;
+        	stroke-width:  1.5px;
+        }
+
+        #age_tooltip {
+				position: absolute;
+				width: 150px;
+				height: auto;
+				padding: 10px;
+				background-color: white;
+				-webkit-border-radius: 10px;
+				-moz-border-radius: 10px;
+				border-radius: 10px;
+				-webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+				-moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+				box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+				pointer-events: none;
+			}
+			
+			#age_tooltip.hidden {
+				display: none;
+			}
+			
+			#age_tooltip p {
+				margin: 0;
+				font-family: serif;
+				font-size: 12px;
+				line-height: 16px;
+			}
+
+		#pump_tooltip {
+			position:  absolute;
+			width: 150px;
+			height:  auto;
+			padding:  10px;
+			background-color: steelblue;
+			-webkit-border-radius:  10px;
+			-moz-box-shadow:  4px 4px 10px rgba(0, 0, 0, 0.4);
+			box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+			pointer-events: none;
+		}
+
+		#pump_tooltip.hidden {
+			display:  none;
+		}
+
+		#pump_tooltip p {
+			margin:  0;
+			font-family:  serif;
+			font-size:  14px;
+			line-height:  18px;
+		}
+
+		#barAge_tooltip {
+			position:  absolute;
+			width: 150px;
+			height:  auto;
+			padding:  10px;
+			background-color: whitesmoke;
+			-webkit-border-radius:  10px;
+			-moz-box-shadow:  4px 4px 10px rgba(0, 0, 0, 0.4);
+			box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+			pointer-events: none;
+		}
+
+		#barAge_tooltip.hidden {
+			display:  none;
+		}
+
+		#barAge_tooltip p {
+			margin:  0;
+			font-family:  serif;
+			font-size:  14px;
+			line-height:  18px;
+		}
+
+		#barGen_tooltip {
+			position:  absolute;
+			width: 150px;
+			height:  auto;
+			padding:  10px;
+			background-color: whitesmoke;
+			-webkit-border-radius:  10px;
+			-moz-box-shadow:  4px 4px 10px rgba(0, 0, 0, 0.4);
+			box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+			pointer-events: none;
+		}
+
+		#barGen_tooltip.hidden {
+			display:  none;
+		}
+
+		#barGen_tooltip p {
+			margin:  0;
+			font-family:  serif;
+			font-size:  14px;
+			line-height:  18px;
+		}
+
+		#time_tooltip {
+			position:  absolute;
+			width: 150px;
+			height:  auto;
+			padding:  10px;
+			background-color: whitesmoke;
+			-webkit-border-radius:  10px;
+			-moz-box-shadow:  4px 4px 10px rgba(0, 0, 0, 0.4);
+			box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+			pointer-events: none;
+		}
+
+		#time_tooltip.hidden {
+			display:  none;
+		}
+
+		#time_tooltip p {
+			margin:  0;
+			font-family:  serif;
+			font-size:  14px;
+			line-height:  18px;
+		}
+
+		#time_tooltip {
+			position:  absolute;
+			width: 150px;
+			height:  auto;
+			padding:  10px;
+			background-color: whitesmoke;
+			-webkit-border-radius:  10px;
+			-moz-box-shadow:  4px 4px 10px rgba(0, 0, 0, 0.4);
+			box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+			pointer-events: none;
+		}
+
+		#time_tooltip.hidden {
+			display:  none;
+		}
+
+		#time_tooltip p {
+			margin:  0;
+			font-family:  serif;
+			font-size:  14px;
+			line-height:  18px;
+		}
+
+		.axis path,
+		.axis line {
+		fill: none;
+		stroke: black;
+		shape-rendering: crispEdges;
+		}
+
+		.axis text {
+		font-family: serif;
+		font-size: 12px;
+		}
+
+    </style>
+
+<body>
+
+	<p>Project 1 - H517</p>
+
+	<div id = 'age_tooltip' class = 'hidden'>
+		<p><strong>Age at Death</strong></p>
+		<p><span id='value'>100</span>years</p>
+	</div>
+
+	<div id = 'pump_tooltip' class = 'hidden'>
+		<p><strong>Water Pump</strong></p>
+	</div>
+
+	<div id = 'barGen_tooltip' class = 'hidden'>
+		<p><strong>Deaths for Gender</strong></p>
+		<p><span id = 'value2'>100</span>deaths</p>
+	</div>
+
+	<div id = 'barAge_tooltip' class = 'hidden'>
+		<p><strong>Deaths in Age Group</strong></p>
+		<p><span id = 'value3'>100</span>deaths</p>
+	</div>
+
+	<div id = 'time_tooltip', class = 'hidden'>
+		<p><strong>Total Deaths</strong></p>
+		<p><span id = 'value4'>100</span>deaths</p>
+	</div>
+
+	<script>
+
+		//set up variables for use later
+		var margin = {t: 20, l: 20, b: 20, r: 20},
+			w = 650,
+			h = 750,
+			w3 = 600,
+			pad = 40
+			chart_size = 250;
+
+		//initialize mapSVG
+		var mapSVG = d3.select('body').append('svg')
+						.attr('width', w)
+						.attr('height', h)
+						.call(d3.behavior.zoom().on('zoom', function() {
+							mapSVG.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scale + ')')
+						}))
+						.append('g')
+						.attr('transform', 'translate(' + margin.l + ',' + margin.t + ')');
+
+		//initialize bar chart svg
+		var barSVG = d3.select('body').append('svg')
+						.attr('width', w3)
+						.attr('height', h);
+
+
+		//read in streets data and draw to mapSVG
+		d3.json('streets.json', function(data) {
+			//console.log(data);
+			streets = data;
+			//console.log(streets);
+			streets.forEach(function(d) {
+				d[0].x1 = +d[0].x*25;
+				d[1].x2 = +d[1].x*25;
+				d[0].y1 = +d[0].y*25;
+				d[1].y2 = +d[1].y*25;
+			});
+
+			//console.log(streets);
+
+			//draw lines
+			mapSVG.selectAll('line')
+				.data(streets)
+				.enter()
+				.append('line')
+				.attr('x1', function(d) {return d[0].x1;})
+				.attr('y1', function(d) {return h - 200 - d[0].y1;})
+				.attr('x2', function(d) {return d[1].x2;})
+				.attr('y2', function(d) {return h - 200 - d[1].y2;})
+				.attr('stroke', 'black')
+				.attr('stroke-width', 0.8);
+
+			//title
+			mapSVG.append('text')
+				.attr('x', w/2 - 30)
+				.attr('y', margin.t*3)
+				.attr('text-anchor', 'middle')
+				.style('font-size', '20px')
+				.style('font-family', 'serif')
+				.style('font-weight', 'bold')
+				.text('London Cholera Epidemic 1854');
+		});
+
+		//read in pumps and add to map
+		d3.csv('pumps.csv', function(data) {
+			//console.log(data);
+			pumps = data;
+			//console.log(pumps);
+
+			mapSVG.selectAll('circle')
+				.data(pumps)
+				.enter()
+				.append('circle')
+				.attr('cx', function(d) {return +d.x*25;})
+				.attr('cy', function(d) {return h - 200 - +d.y*25;})
+				.attr('r', 4)
+				.attr('fill', '#404049')
+				.on('mouseover', function(d) {
+					d3.select(this)
+						.transition()
+						.duration(250)
+						.attr('r', 9);
+
+					var xPos = parseFloat(d3.select(this).attr('cx')) + 15;
+					var yPos = parseFloat(d3.select(this).attr('cy')) + 25;
+
+					d3.select('#pump_tooltip')
+						.style('left', xPos + 'px')
+						.style('top', yPos + 'px');
+
+					d3.select('#pump_tooltip').classed('hidden', false);
+
+				})
+				.on('mouseout', function(d) {
+					d3.select(this)
+						.transition()
+						.duration(250)
+						.attr('r', 4);
+
+					d3.select('#pump_tooltip').classed('hidden', true);
+
+				})
+			});
+
+		//read in deaths_age_sex file and use to plot deaths on map coded by gender and age
+		//also use to create bar charts for both variables using predefined functions
+		d3.csv('deaths_age_sex.csv', function(data) {
+			//console.log(data);
+			deaths = data;
+			//console.log(deaths);
+
+			//create scales
+			var ageScale = d3.scale.linear()
+								.domain([0, d3.max(deaths, function(d) {return +d.age})])
+								.range([1.5, 3]);
+
+			var ageOrdinal = d3.scale.ordinal()
+										.domain([0, 1, 2, 3, 4, 5])
+										.range([1.5, 1.8, 2.1, 2.4, 2.7, 3]);
+
+			var genderScale = d3.scale.ordinal()
+									.domain([0, 1])
+									.range(['#4585FD', '#FF6556']);
+
+			var legendText = d3.scale.ordinal()
+										.domain([0, 1, 2])
+										.range(['Male', 'Female', 'Pump']);
+
+			var legendLabel = d3.scale.ordinal()
+										.domain([0, 1, 2])
+										.range(['#4585FD', '#FF6556', '#404049']);
+
+			var ageBuckets = d3.scale.ordinal()
+										.domain([0, 1, 2, 3, 4, 5])
+										.range(['0-10', '11-20', '21-40', '41-60', '61-80', '>80']);
+
+
+			//create points for deaths on map
+			mapSVG.selectAll('circle')
+				.data(deaths)
+				.enter()
+				.append('circle')
+				.attr('cx', function(d) {return +d.x*25;})
+				.attr('cy', function(d) {return h - 200 - +d.y*25;})
+				.attr('r', function(d) {return ageScale(+d.age);})
+				.attr('fill', function(d) {return genderScale(+d.gender);})
+				.on('mouseover', function(d) {
+					d3.select(this)
+						.transition()
+						.duration(250)
+						.attr('r', 7);
+
+					var xPos = parseFloat(d3.select(this).attr('cx')) + 15;
+					var yPos = parseFloat(d3.select(this).attr('cy')) + 15;
+
+					d3.select("#age_tooltip")
+						.style("left", xPos + "px")
+						.style("top", yPos + "px")						
+						.select("#value")
+						.text('Age: ' + ageBuckets(d.age) + ' ');
+			   
+					d3.select("#age_tooltip").classed("hidden", false);
+				})
+				.on('mouseout', function(d) {
+					d3.select(this)
+						.transition()
+						.duration(250)
+						.attr('r', function(d) {return ageScale(+d.age);});
+					d3.select('#age_tooltip').classed('hidden', true);
+				});
+
+			//create legend for gender
+			var keys = ['0', '1', '2'];
+			mapSVG.selectAll('genderdots')
+				.data(keys)
+				.enter()
+				.append('circle')
+				.attr('cx', 100)
+				.attr('cy', function(d, i) {return 480 + i*20;})
+				.attr('r', 5)
+				.style('fill', function(d) {return legendLabel(d);});
+
+			mapSVG.selectAll('genderlabels')
+				.data(keys)
+				.enter()
+				.append('text')
+				.attr('x', 115)
+				.attr('y', function(d, i) {return 480 + i*20;})
+				.style('fill', function(d) {return legendLabel(d);})
+				.text(function(d) {return legendText(d);})
+				.style('font-family', 'serif')
+				.attr('text-anchor', 'left')
+				.style('alignment-baseline', 'middle');
+
+			//create legend for age (size of points)
+			var ageKeys = ['0', '1', '2', '3', '4', '5'];
+			mapSVG.selectAll('agedots')
+				.data(ageKeys)
+				.enter()
+				.append('circle')
+				.attr('cx', 200)
+				.attr('cy', function(d, i) {return 480 + i*20;})
+				.attr('r', function(d) {return ageOrdinal(d);})
+				.attr('fill', '#404049');
+
+			mapSVG.selectAll('agelabels')
+				.data(ageKeys)
+				.enter()
+				.append('text')
+				.attr('x', 215)
+				.attr('y', function(d, i) {return 480 + i*20;})
+				.style('fill', '#404049')
+				.text(function(d) {return ageBuckets(d) + ' years';})
+				.style('font-family', 'serif')
+				.attr('text-anchor', 'left')
+				.style('alignment-baseline', 'middle');
+		});
+
+		//add street labels with csv
+		d3.csv('maplabels.csv', function(data) {
+			//console.log(data);
+			maplabels = data;
+
+			mapSVG.selectAll('maplabels')
+				.data(maplabels)
+				.enter()
+				.append('text')
+				.attr('x', function(d) {return +d.x;})
+				.attr('y', function(d) {return +d.y;})
+				.text(function(d) {return d.text;})
+				.style('font-family', 'serif')
+				.style('font-size', function(d) {return d.fontsize;})
+				.attr('transform', function(d) {
+					var xRot = d3.select(this).attr('x');
+					var yRot = d3.select(this).attr('y');
+					return 'rotate(' + (+d.angle) + ',' + xRot + ',' + yRot + ')';
+				})
+				.on('mouseover', function(d) {
+					d3.select(this)
+						.transition()
+						.duration(250)
+						.style('font-size', 12);
+				})
+				.on('mouseout', function(d) {
+					d3.select(this)
+						.transition()
+						.duration(250)
+						.style('font-size', function(d) {return d.fontsize;})
+				});
+		});
+
+		//used R to calculate deaths by age and gender
+		//will use those estimates to draw bar charts
+		var genderDeaths = [0, 284, 287, 0];
+		var genders = ['', 'Male', 'Female', ''];
+
+		var ageDeaths = [0, 143, 48, 58, 57, 91, 174, 0];
+		var ages = ['', '0-10', '11-20', '21-40', '41-60', '61-80', '>80', ''];
+
+		var xScaleG = d3.scale.ordinal()
+							.domain(genders)
+							.range([0, 40, 80, 120]);
+
+		var yScaleG = d3.scale.linear()
+							.domain([0, 300])
+							.range([chart_size, 0]);
+
+		var xAxisG = d3.svg.axis()
+							.scale(xScaleG)
+							.orient('bottom');
+
+		var yAxisG = d3.svg.axis()
+							.scale(yScaleG)
+							.orient('left');
+
+		var xScaleA = d3.scale.ordinal()
+								.domain(ages)
+								.range([0, 35, 70, 105, 140, 175, 210, 245]);
+
+		var yScaleA = d3.scale.linear()
+								.domain([0, 300])
+								.range([chart_size, 0]);
+
+		var xAxisA = d3.svg.axis()
+							.scale(xScaleA)
+							.orient('bottom');
+
+		var yAxisA = d3.svg.axis()
+							.scale(yScaleA)
+							.orient('left');
+
+		var gGender = barSVG.append('g')
+						.attr('transform', 'translate(50, 30)');
+
+		gGender.append('g')
+				.attr('class', 'axis')
+				.attr('transform', 'translate(0,' + chart_size + ')')
+				.call(xAxisG);
+
+		gGender.append('g')
+				.attr('class', 'axis')
+				.call(yAxisG);
+
+		gGender.selectAll('rect')
+				.data(genderDeaths)
+				.enter()
+				.append('rect')
+				.attr('x', function(d, i) {
+					return (i*40) - 10;
+				})
+				.attr('y', function(d) {
+					return yScaleG(d);
+				})
+				.attr('width', 20)
+				.attr('height', function(d) {
+					return chart_size - yScaleG(d);
+				})
+				.attr('fill', 'steelblue')
+				.on('mouseover', function(d) {
+					d3.select(this)
+						.transition()
+						.duration(250)
+						.attr('fill', 'blue')
+					var xPos = parseFloat(d3.select(this).attr('x')) + 675;
+					var yPos = parseFloat(d3.select(this).attr('y')) + 30;
+					d3.select('#barGen_tooltip')
+						.style('left', xPos + 'px')
+						.style('top', yPos + 'px')
+						.select('#value2')
+						.text(d + ' ');
+					d3.select('#barGen_tooltip').classed('hidden', false);
+				})
+				.on('mouseout', function(d) {
+					d3.select(this)
+						.transition()
+						.duration(250)
+						.attr('fill', 'steelblue')
+					d3.select('#barGen_tooltip').classed('hidden', true);
+				});
+
+
+		gGender.append('text')
+				.attr('transform', 'translate(' + 60 + ',' + (chart_size+40) + ')')
+				.attr('text-anchor', 'middle')
+				.style('font-weight', 'bold')
+				.html('Gender');
+
+		gGender.append('text')
+				.attr('transform', 'translate(' + (-40) + ',' + (chart_size/2) + ')')
+				.attr('text-anchor', 'middle')
+				.attr('transform', 'rotate(-90, 55, 90)')
+				.style('font-weight', 'bold')
+				.html('Deaths');
+
+		var gAge = barSVG.append('g')
+						.attr('transform', 'translate(225, 30)');
+
+		gAge.append('g')
+				.attr('class', 'axis')
+				.attr('transform', 'translate(0,' + chart_size + ')')
+				.call(xAxisA);
+
+		gAge.append('g')
+				.attr('class', 'axis')
+				.call(yAxisA);
+
+		gAge.selectAll('rect')
+				.data(ageDeaths)
+				.enter()
+				.append('rect')
+				.attr('x', function(d, i) {
+					return (i*35) - 10;
+				})
+				.attr('y', function(d) {
+					return yScaleA(d);
+				})
+				.attr('width', 20)
+				.attr('height', function(d) {
+					return chart_size - yScaleA(d);
+				})
+				.attr('fill', 'steelblue')
+				.on('mouseover', function(d) {
+					d3.select(this)
+						.transition()
+						.duration(250)
+						.attr('fill', 'blue')
+					var xPos2 = parseFloat(d3.select(this).attr('x')) + 850;
+					var yPos2 = parseFloat(d3.select(this).attr('y')) + 30;
+					d3.select('#barAge_tooltip')
+						.style('left', xPos2 + 'px')
+						.style('top', yPos2 + 'px')
+						.select('#value3')
+						.text(d + ' ');
+					d3.select('#barAge_tooltip').classed('hidden', false);
+				})
+				.on('mouseout', function(d) {
+					d3.select(this)
+						.transition()
+						.duration(250)
+						.attr('fill', 'steelblue')
+					d3.select('#barAge_tooltip').classed('hidden', true);
+				});
+
+
+		gAge.append('text')
+				.attr('transform', 'translate(' + (chart_size/2) + ',' + (chart_size+40) + ')')
+				.attr('text-anchor', 'middle')
+				.style('font-weight', 'bold')
+				.html('Age');
+
+		barSVG.append('text')
+				.attr('x', w3/2 - 30)
+				.attr('y', margin.t)
+				.attr('text-anchor', 'middle')
+				.style('font-size', '20px')
+				.style('font-weight', 'bold')
+				.style('font-family', 'serif')
+				.text('Bar Charts of Deaths by Age and Gender');
+
+		barSVG.append('text')
+				.attr('x', w3/2 - 50)
+				.attr('y', 375)
+				.attr('text-anchor', 'middle')
+				.style('font-size', '20px')
+				.style('font-weight', 'bold')
+				.style('font-family', 'serif')
+				.text('Timeline of Deaths');
+
+		//read in death days file to create timeline
+		d3.csv('deathdays.csv', function(data) {
+			//console.log(data);
+			deathdays = data;
+			//console.log(deathdays);
+
+			var dates = [''];
+			var deaths = [];
+
+			for (var i = 0; i<deathdays.length; i++) {
+				var date = deathdays[i].date;
+				dates.push(date);
+				var death = +deathdays[i].deaths;
+				deaths.push(death);
+			}
+
+			//console.log(deaths);
+			//console.log(dates);
+
+			var timeScaleX = d3.scale.ordinal()
+								.domain(dates)
+								.range([0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336, 348, 360, 372, 384, 396, 408, 420, 432, 444, 456, 468, 480, 492, 504]);
+
+			var timeScaleY = d3.scale.linear()
+								.domain([0, 150])
+								.range([chart_size, 0]);
+
+			var timeAxisX = d3.svg.axis()
+								.scale(timeScaleX)
+								.orient('bottom');
+
+			var timeAxisY = d3.svg.axis()
+								.scale(timeScaleY)
+								.orient('left');
+
+			var timeline = barSVG.append('g')
+								.attr('transform', 'translate(50, 410)');
+
+			timeline.append('g')
+						.attr('class', 'axis')
+						.attr('transform', 'translate(0, 250)')
+						.call(timeAxisX)
+							.selectAll('text')
+							.style('text-anchor', 'end')
+							.attr('dx', '-.8em')
+							.attr('dy', '-.5em')
+							.attr('transform', 'rotate(-90)')
+
+			timeline.append('g')
+						.attr('class', 'axis')
+						.call(timeAxisY);
+
+			timeline.selectAll('rect')
+						.data(deaths)
+						.enter()
+						.append('rect')
+						.attr('x', function(d, i) {
+							return (i*12)+7;
+						})
+						.attr('y', function(d) {
+							return timeScaleY(d);
+						})
+						.attr('width', 10)
+						.attr('height', function(d) {
+							return chart_size - timeScaleY(d);
+						})
+						.attr('fill', 'steelblue')
+						.on('mouseover', function(d) {
+							d3.select(this)
+								.transition()
+								.duration(250)
+								.attr('fill', 'blue');
+
+							var xPos3 = 700;
+							var yPos3 = 450;
+
+							d3.select('#time_tooltip')
+								.style('left', xPos3 + 'px')
+								.style('top', yPos3 + 'px')
+								.select('#value4')
+								.text(d + ' ');
+
+							d3.select('#time_tooltip').classed('hidden', false);
+
+						})
+						.on('mouseout', function(d) {
+							d3.select(this)
+								.transition()
+								.duration(250)
+								.attr('fill', 'steelblue');
+							d3.select('#time_tooltip').classed('hidden', true);
+
+						});			
+		});
+
+	</script>
+
+	<p><a href='https://youtube.com/embed/epdIQZXphqU'>Video Narration:</a></p>
+
+	<iframe width = '420', height = '315' 
+	src='https://youtube.com/embed/epdIQZXphqU'>
+	</iframe>
+
+
+</body>
+
+</html>

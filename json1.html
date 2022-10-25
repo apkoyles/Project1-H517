@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Project 1 Beginnings</title>
+	<script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+    <style>
+        
+
+    </style>
+
+<body>
+	
+	<script>
+
+		var dataset = [5, 10, 15, 20, 25];
+
+		var svg1 = d3.select('body')
+			.append('svg')
+			.attr('width', 500)
+			.attr('height', 500);
+
+		var svg2 = d3.select('body')
+			.append('svg')
+			.attr('width', 500)
+			.attr('height', 500);
+
+		var circles = svg1.selectAll('circle')
+							.data(dataset)
+							.enter()
+							.append('circle');
+
+		circles.attr('cx', function(d, i) {
+			return (i * 50) + 25
+		})
+				.attr('cy', 250)
+				.attr('r', function(d) {
+					return d
+				})
+				.attr('stroke', 'red')
+							.attr('stroke-width', function(d) {
+								return d/2
+							});
+
+		var circles2 = svg2.selectAll('circle')
+							.data(dataset)
+							.enter()
+							.append('circle');
+
+		circles2.attr('cx', function(d, i) {
+			return (i * 50) + 25
+		})
+				.attr('cy', 250)
+				.attr('r', function(d) {
+					return d/2
+				})
+				.attr('fill', 'red')
+				.attr('stroke', 'black')
+				.attr('stroke-width', function(d) {
+					return d/4
+				});
+
+		d3.json('streets.json', function(d) {
+			console.log(d);
+		});
+
+
+
+	</script>
+
+</body>
+
+</html>
